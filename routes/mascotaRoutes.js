@@ -8,5 +8,6 @@ router.get('/', mascotaController.obtenerMascotas);
 router.get('/:id', mascotaController.obtenerMascotaPorId); 
 router.put('/:id', mascotaController.actualizarMascota); 
 router.delete('/:id', mascotaController.eliminarMascota);
+router.get('/hogar/:idHogar', mascotaController.obtenerMascotasPorHogar);
 
 module.exports = router;

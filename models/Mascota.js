@@ -28,6 +28,13 @@ const Mascota = sequelize.define('Mascota', {
         type: DataTypes.ENUM('Sin hogar', 'En acogida'),
         defaultValue: 'Sin hogar'
     },
+
+    hogarId:{
+        type: DataTypes.INTEGER,
+        allowNull: true, 
+        defaultValue: null
+    },
+
     fotoUrl: {
         type: DataTypes.STRING,
         allowNull: true

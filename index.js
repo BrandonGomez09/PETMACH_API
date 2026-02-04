@@ -21,7 +21,7 @@ app.use('/api/hogares', require('./routes/hogarRoutes'));
 const iniciarServidor = async () => {
     try {
         await conectarDB();
-        await sequelize.sync({ force: false }); 
+        await sequelize.sync({ alter: true }); 
         console.log('✅ Tablas sincronizadas con PostgreSQL');
 
         const PORT = process.env.PORT || 4000;

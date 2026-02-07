@@ -22,14 +22,14 @@ const iniciarServidor = async () => {
     try {
         await conectarDB();
         await sequelize.sync({ alter: true }); 
-        console.log('✅ Tablas sincronizadas con PostgreSQL');
+        console.log('Tablas sincronizadas con PostgreSQL');
 
         const PORT = process.env.PORT || 4000;
         app.listen(PORT, () => {
-            console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+            console.log(`Servidor corriendo en http://localhost:${PORT}`);
         });
     } catch (error) {
-        console.error('❌ Error al iniciar el servidor:', error);
+        console.error('Error al iniciar el servidor:', error);
     }
 };
 

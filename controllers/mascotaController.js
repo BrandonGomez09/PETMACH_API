@@ -1,8 +1,16 @@
 const Mascota = require('../models/Mascota');
+const socketManager = require('../socket');
 
+// ─────────────────────────────────────────────
+// CREAR
+// ─────────────────────────────────────────────
 exports.crearMascota = async (req, res) => {
     try {
         const nuevaMascota = await Mascota.create(req.body);
+
+        // 🔔 Emitir evento en tiempo real
+        socketManager.getIO().emit('mascota_actualizada', nuevaMascota);
+
         res.status(201).json(nuevaMascota);
     } catch (error) {
         console.error(error);
@@ -10,6 +18,9 @@ exports.crearMascota = async (req, res) => {
     }
 };
 
+// ─────────────────────────────────────────────
+// OBTENER TODAS
+// ─────────────────────────────────────────────
 exports.obtenerMascotas = async (req, res) => {
     try {
         const mascotas = await Mascota.findAll();
@@ -20,7 +31,9 @@ exports.obtenerMascotas = async (req, res) => {
     }
 };
 
-
+// ─────────────────────────────────────────────
+// OBTENER POR ID
+// ─────────────────────────────────────────────
 exports.obtenerMascotaPorId = async (req, res) => {
     try {
         const mascota = await Mascota.findByPk(req.params.id);
@@ -34,7 +47,9 @@ exports.obtenerMascotaPorId = async (req, res) => {
     }
 };
 
-
+// ─────────────────────────────────────────────
+// ACTUALIZAR
+// ─────────────────────────────────────────────
 exports.actualizarMascota = async (req, res) => {
     try {
         const { id } = req.params;
@@ -82,6 +97,10 @@ exports.actualizarMascota = async (req, res) => {
         }
 
         await mascota.update(datosActualizar);
+
+        // 🔔 Emitir evento en tiempo real
+        socketManager.getIO().emit('mascota_actualizada', mascota);
+
         res.json(mascota);
     } catch (error) {
         console.error(error);
@@ -89,23 +108,32 @@ exports.actualizarMascota = async (req, res) => {
     }
 };
 
-
+// ─────────────────────────────────────────────
+// ELIMINAR
+// ─────────────────────────────────────────────
 exports.eliminarMascota = async (req, res) => {
     try {
-        const mascota = await Mascota.findByPk(req.params.id);
+        const { id } = req.params;
+        const mascota = await Mascota.findByPk(id);
         if (!mascota) {
             return res.status(404).json({ msg: 'Mascota no encontrada' });
         }
 
         await mascota.destroy();
+
+        // 🔔 Emitir evento en tiempo real
+        socketManager.getIO().emit('mascota_eliminada', { id: Number(id) });
+
         res.json({ msg: 'Mascota eliminada correctamente' });
     } catch (error) {
         console.error(error);
         res.status(500).send('Hubo un error al eliminar');
     }
-
 };
 
+// ─────────────────────────────────────────────
+// OBTENER POR HOGAR
+// ─────────────────────────────────────────────
 exports.obtenerMascotasPorHogar = async (req, res) => {
     try {
         const { idHogar } = req.params;

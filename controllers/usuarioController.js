@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 
 exports.registrarUsuario = async (req, res) => {
     try {
-        const { nombre, email, password, telefono } = req.body;
+        const { nombre, email, password, telefono, rol } = req.body;
 
         const usuarioExistente = await Usuario.findOne({ where: { email } });
         if (usuarioExistente) {
@@ -18,7 +18,8 @@ exports.registrarUsuario = async (req, res) => {
             nombre,
             email,
             password: passwordHash,
-            telefono
+            telefono,
+            rol: rol || 'voluntario'
         });
 
         const payload = {
@@ -27,7 +28,7 @@ exports.registrarUsuario = async (req, res) => {
 
         jwt.sign(payload, 'secreto_super_seguro', { expiresIn: '1h' }, (error, token) => {
             if (error) throw error;
-            res.json({ token });
+            res.json({ token, rol: nuevoUsuario.rol, nombre: nuevoUsuario.nombre });
         });
 
     } catch (error) {
@@ -56,7 +57,7 @@ exports.autenticarUsuario = async (req, res) => {
 
         jwt.sign(payload, 'secreto_super_seguro', { expiresIn: '1h' }, (error, token) => {
             if (error) throw error;
-            res.json({ token });
+            res.json({ token, rol: usuario.rol, nombre: usuario.nombre });
         });
 
     } catch (error) {

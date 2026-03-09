@@ -1,0 +1,206 @@
+{
+    "proyecto": "PetMatch API — Nuevas Funcionalidades",
+    "baseUrl": "http://localhost:4000",
+    "nota_para_desarrollador": "Estos son los 2 nuevos módulos implementados: Intereses (adopción) y Salud (historial clínico). Ambos emiten eventos Socket.io para actualización en tiempo real en el Dashboard.",
+    "nuevos_endpoints": [
+        {
+            "grupo": "Intereses (Adopción)",
+            "descripcion": "Permite que un usuario exprese interés en adoptar una mascota. Al registrarse, se notifica en tiempo real vía Socket.io.",
+            "rutas": [
+                {
+                    "metodo": "POST",
+                    "ruta": "/api/intereses",
+                    "descripcion": "El usuario expresa interés en adoptar una mascota",
+                    "rol_requerido": "Voluntario o Admin",
+                    "headers": {
+                        "Content-Type": "application/json"
+                    },
+                    "body": {
+                        "usuarioId": "integer — ID del usuario que se interesa (obligatorio)",
+                        "mascotaId": "integer — ID de la mascota de interés (obligatorio)"
+                    },
+                    "ejemplo_body": {
+                        "usuarioId": 3,
+                        "mascotaId": 7
+                    },
+                    "respuesta_exitosa": {
+                        "status": 201,
+                        "body": {
+                            "id": 1,
+                            "usuarioId": 3,
+                            "mascotaId": 7,
+                            "fecha": "2026-03-09T22:06:00.000Z",
+                            "createdAt": "2026-03-09T22:06:00.000Z",
+                            "updatedAt": "2026-03-09T22:06:00.000Z"
+                        }
+                    },
+                    "errores_posibles": [
+                        {
+                            "status": 404,
+                            "msg": "Usuario no encontrado — el usuarioId no existe en la BD"
+                        },
+                        {
+                            "status": 404,
+                            "msg": "Mascota no encontrada — el mascotaId no existe en la BD"
+                        },
+                        {
+                            "status": 500,
+                            "msg": "Error al registrar el interés"
+                        }
+                    ],
+                    "socket_evento": {
+                        "nombre": "nuevo_interes",
+                        "descripcion": "Se emite a todos los clientes conectados tras registrar el interés",
+                        "datos_emitidos": "Objeto Interes con usuarioId, mascotaId y fecha"
+                    }
+                },
+                {
+                    "metodo": "GET",
+                    "ruta": "/api/intereses/mascota/:id",
+                    "descripcion": "Obtiene todos los usuarios que han expresado interés en una mascota específica. Útil para el panel del admin.",
+                    "rol_requerido": "Admin (recomendado)",
+                    "params": {
+                        "id": "integer — ID de la mascota"
+                    },
+                    "ejemplo_url": "/api/intereses/mascota/7",
+                    "respuesta_exitosa": {
+                        "status": 200,
+                        "body": [
+                            {
+                                "id": 1,
+                                "usuarioId": 3,
+                                "mascotaId": 7,
+                                "fecha": "2026-03-09T22:06:00.000Z",
+                                "Usuario": {
+                                    "id": 3,
+                                    "nombre": "Juan Pérez",
+                                    "email": "juan@email.com",
+                                    "telefono": "5512345678"
+                                }
+                            }
+                        ]
+                    },
+                    "errores_posibles": [
+                        {
+                            "status": 500,
+                            "msg": "Error al obtener los intereses"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "grupo": "Salud (Historial Clínico)",
+            "descripcion": "Gestiona el historial médico de las mascotas. Solo el admin puede agregar registros. Todos pueden consultar el historial.",
+            "rutas": [
+                {
+                    "metodo": "POST",
+                    "ruta": "/api/salud",
+                    "descripcion": "Agrega un registro clínico (diagnóstico, vacuna) al historial de una mascota. SOLO ADMIN.",
+                    "rol_requerido": "Solo Admin",
+                    "headers": {
+                        "Content-Type": "application/json"
+                    },
+                    "body": {
+                        "rol": "string — debe ser exactamente 'admin' (obligatorio para autorización)",
+                        "mascotaId": "integer — ID de la mascota (obligatorio)",
+                        "diagnostico": "string — descripción del diagnóstico (obligatorio)",
+                        "vacuna": "string — nombre de la vacuna aplicada (opcional)",
+                        "fechaTratamiento": "string — fecha en formato YYYY-MM-DD (obligatorio)"
+                    },
+                    "ejemplo_body": {
+                        "rol": "admin",
+                        "mascotaId": 7,
+                        "diagnostico": "Revisión general, animal en buen estado",
+                        "vacuna": "Rabia",
+                        "fechaTratamiento": "2026-03-09"
+                    },
+                    "respuesta_exitosa": {
+                        "status": 201,
+                        "body": {
+                            "id": 1,
+                            "mascotaId": 7,
+                            "diagnostico": "Revisión general, animal en buen estado",
+                            "vacuna": "Rabia",
+                            "fechaTratamiento": "2026-03-09T00:00:00.000Z",
+                            "createdAt": "2026-03-09T22:06:00.000Z",
+                            "updatedAt": "2026-03-09T22:06:00.000Z"
+                        }
+                    },
+                    "errores_posibles": [
+                        {
+                            "status": 403,
+                            "msg": "Acceso denegado. Solo administradores pueden agregar registros de salud."
+                        },
+                        {
+                            "status": 404,
+                            "msg": "Mascota no encontrada"
+                        },
+                        {
+                            "status": 500,
+                            "msg": "Error al agregar el registro de salud"
+                        }
+                    ],
+                    "socket_evento": {
+                        "nombre": "nuevo_registro_salud",
+                        "descripcion": "Se emite a todos los clientes conectados tras agregar el registro. Úsalo para refrescar el Dashboard automáticamente.",
+                        "datos_emitidos": "Objeto Salud con todos los campos del registro creado"
+                    }
+                },
+                {
+                    "metodo": "GET",
+                    "ruta": "/api/salud/mascota/:mascotaId",
+                    "descripcion": "Obtiene el historial clínico completo de una mascota, ordenado del más reciente al más antiguo.",
+                    "rol_requerido": "Todos (público)",
+                    "params": {
+                        "mascotaId": "integer — ID de la mascota"
+                    },
+                    "ejemplo_url": "/api/salud/mascota/7",
+                    "respuesta_exitosa": {
+                        "status": 200,
+                        "body": [
+                            {
+                                "id": 2,
+                                "mascotaId": 7,
+                                "diagnostico": "Control post-operatorio",
+                                "vacuna": null,
+                                "fechaTratamiento": "2026-03-09T00:00:00.000Z",
+                                "createdAt": "2026-03-09T22:06:00.000Z",
+                                "updatedAt": "2026-03-09T22:06:00.000Z"
+                            },
+                            {
+                                "id": 1,
+                                "mascotaId": 7,
+                                "diagnostico": "Revisión general",
+                                "vacuna": "Rabia",
+                                "fechaTratamiento": "2026-02-01T00:00:00.000Z",
+                                "createdAt": "2026-02-01T10:00:00.000Z",
+                                "updatedAt": "2026-02-01T10:00:00.000Z"
+                            }
+                        ]
+                    },
+                    "errores_posibles": [
+                        {
+                            "status": 500,
+                            "msg": "Error al obtener el historial clínico"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "nuevos_eventos_socket": [
+        {
+            "evento": "nuevo_interes",
+            "cuando": "Al hacer POST /api/intereses exitosamente",
+            "datos": "Objeto Interes { id, usuarioId, mascotaId, fecha }",
+            "uso_sugerido": "Mostrar notificación en el panel del admin cuando alguien se interesa en una mascota"
+        },
+        {
+            "evento": "nuevo_registro_salud",
+            "cuando": "Al hacer POST /api/salud exitosamente",
+            "datos": "Objeto Salud { id, mascotaId, diagnostico, vacuna, fechaTratamiento }",
+            "uso_sugerido": "Refrescar automáticamente el historial clínico de la mascota en el Dashboard"
+        }
+    ]
+}

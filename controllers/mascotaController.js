@@ -32,7 +32,7 @@ exports.obtenerMascotas = async (req, res) => {
 };
 
 // ─────────────────────────────────────────────
-// OBTENER POR ID
+//   OBTENER POR ID
 // ─────────────────────────────────────────────
 exports.obtenerMascotaPorId = async (req, res) => {
     try {

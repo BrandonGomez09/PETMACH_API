@@ -1,0 +1,334 @@
+{
+    "proyecto": "PetMatch API",
+    "baseUrl": "http://localhost:4000",
+    "version": "1.0.0",
+    "autenticacion": "JWT — el token se obtiene en /api/usuarios/login y debe enviarse en el header: Authorization: Bearer <token> (actualmente no requerido en todas las rutas)",
+    "endpoints": [
+        {
+            "grupo": "Usuarios",
+            "base": "/api/usuarios",
+            "rutas": [
+                {
+                    "metodo": "POST",
+                    "ruta": "/api/usuarios/registro",
+                    "descripcion": "Registrar un nuevo usuario",
+                    "rol_requerido": "Ninguno (público)",
+                    "body": {
+                        "nombre": "string (obligatorio)",
+                        "email": "string (obligatorio, único)",
+                        "password": "string (obligatorio)",
+                        "telefono": "string (opcional)",
+                        "rol": "string (opcional) — 'admin' | 'voluntario', default: 'voluntario'"
+                    },
+                    "respuesta_exitosa": {
+                        "status": 201,
+                        "body": {
+                            "token": "JWT string",
+                            "rol": "voluntario | admin",
+                            "nombre": "string"
+                        }
+                    }
+                },
+                {
+                    "metodo": "POST",
+                    "ruta": "/api/usuarios/login",
+                    "descripcion": "Autenticar usuario y obtener token",
+                    "rol_requerido": "Ninguno (público)",
+                    "body": {
+                        "email": "string (obligatorio)",
+                        "password": "string (obligatorio)"
+                    },
+                    "respuesta_exitosa": {
+                        "status": 200,
+                        "body": {
+                            "token": "JWT string",
+                            "rol": "voluntario | admin",
+                            "nombre": "string"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "grupo": "Mascotas",
+            "base": "/api/mascotas",
+            "rutas": [
+                {
+                    "metodo": "POST",
+                    "ruta": "/api/mascotas",
+                    "descripcion": "Crear una nueva mascota",
+                    "rol_requerido": "Admin / Voluntario",
+                    "body": {
+                        "nombre": "string (obligatorio)",
+                        "especie": "string (obligatorio) — 'Perro' | 'Gato' | 'Otro'",
+                        "edad": "integer (obligatorio)",
+                        "estadoSalud": "string (opcional) — default: 'Saludable'",
+                        "fotoUrl": "string (opcional) — URL de imagen"
+                    },
+                    "respuesta_exitosa": {
+                        "status": 201,
+                        "body": "Objeto Mascota creada"
+                    }
+                },
+                {
+                    "metodo": "GET",
+                    "ruta": "/api/mascotas",
+                    "descripcion": "Obtener todas las mascotas",
+                    "rol_requerido": "Todos",
+                    "respuesta_exitosa": {
+                        "status": 200,
+                        "body": "Array de mascotas"
+                    }
+                },
+                {
+                    "metodo": "GET",
+                    "ruta": "/api/mascotas/:id",
+                    "descripcion": "Obtener una mascota por su ID",
+                    "rol_requerido": "Todos",
+                    "params": {
+                        "id": "integer — ID de la mascota"
+                    },
+                    "respuesta_exitosa": {
+                        "status": 200,
+                        "body": "Objeto Mascota"
+                    }
+                },
+                {
+                    "metodo": "PUT",
+                    "ruta": "/api/mascotas/:id",
+                    "descripcion": "Actualizar datos de una mascota. Si se envía hogarId, se asigna al hogar (valida capacidad). Si hogarId es null, se desvincula del hogar.",
+                    "rol_requerido": "Admin / Voluntario",
+                    "params": {
+                        "id": "integer — ID de la mascota"
+                    },
+                    "body": {
+                        "nombre": "string (opcional)",
+                        "especie": "string (opcional)",
+                        "edad": "integer (opcional)",
+                        "estadoSalud": "string (opcional)",
+                        "fotoUrl": "string (opcional)",
+                        "hogarId": "integer | null (opcional) — asignar o desasignar hogar"
+                    },
+                    "respuesta_exitosa": {
+                        "status": 200,
+                        "body": "Objeto Mascota actualizada"
+                    }
+                },
+                {
+                    "metodo": "DELETE",
+                    "ruta": "/api/mascotas/:id",
+                    "descripcion": "Eliminar una mascota",
+                    "rol_requerido": "Admin",
+                    "params": {
+                        "id": "integer — ID de la mascota"
+                    },
+                    "respuesta_exitosa": {
+                        "status": 200,
+                        "body": {
+                            "msg": "Mascota eliminada correctamente"
+                        }
+                    }
+                },
+                {
+                    "metodo": "GET",
+                    "ruta": "/api/mascotas/hogar/:idHogar",
+                    "descripcion": "Obtener todas las mascotas asignadas a un hogar específico",
+                    "rol_requerido": "Todos",
+                    "params": {
+                        "idHogar": "integer — ID del hogar"
+                    },
+                    "respuesta_exitosa": {
+                        "status": 200,
+                        "body": "Array de mascotas del hogar"
+                    }
+                }
+            ]
+        },
+        {
+            "grupo": "Hogares",
+            "base": "/api/hogares",
+            "rutas": [
+                {
+                    "metodo": "POST",
+                    "ruta": "/api/hogares",
+                    "descripcion": "Crear un nuevo hogar de acogida",
+                    "rol_requerido": "Admin / Voluntario",
+                    "body": {
+                        "nombreVoluntario": "string (obligatorio)",
+                        "direccion": "string (obligatorio)",
+                        "telefono": "string (obligatorio)",
+                        "capacidad": "integer (obligatorio, mínimo 0)",
+                        "tipoMascotaAceptada": "string (obligatorio) — 'Perros' | 'Gatos' | 'Ambos'",
+                        "suministrosDisponibles": "string (opcional)"
+                    },
+                    "respuesta_exitosa": {
+                        "status": 201,
+                        "body": "Objeto Hogar creado"
+                    }
+                },
+                {
+                    "metodo": "GET",
+                    "ruta": "/api/hogares",
+                    "descripcion": "Obtener todos los hogares",
+                    "rol_requerido": "Todos",
+                    "respuesta_exitosa": {
+                        "status": 200,
+                        "body": "Array de hogares"
+                    }
+                },
+                {
+                    "metodo": "GET",
+                    "ruta": "/api/hogares/:id",
+                    "descripcion": "Obtener un hogar por su ID",
+                    "rol_requerido": "Todos",
+                    "params": {
+                        "id": "integer — ID del hogar"
+                    },
+                    "respuesta_exitosa": {
+                        "status": 200,
+                        "body": "Objeto Hogar"
+                    }
+                },
+                {
+                    "metodo": "PUT",
+                    "ruta": "/api/hogares/:id",
+                    "descripcion": "Actualizar datos de un hogar",
+                    "rol_requerido": "Admin / Voluntario",
+                    "params": {
+                        "id": "integer — ID del hogar"
+                    },
+                    "body": {
+                        "nombreVoluntario": "string (opcional)",
+                        "direccion": "string (opcional)",
+                        "telefono": "string (opcional)",
+                        "capacidad": "integer (opcional)",
+                        "tipoMascotaAceptada": "string (opcional)",
+                        "suministrosDisponibles": "string (opcional)"
+                    },
+                    "respuesta_exitosa": {
+                        "status": 200,
+                        "body": "Objeto Hogar actualizado"
+                    }
+                },
+                {
+                    "metodo": "DELETE",
+                    "ruta": "/api/hogares/:id",
+                    "descripcion": "Eliminar un hogar",
+                    "rol_requerido": "Admin",
+                    "params": {
+                        "id": "integer — ID del hogar"
+                    },
+                    "respuesta_exitosa": {
+                        "status": 200,
+                        "body": {
+                            "msg": "Hogar eliminado correctamente"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "grupo": "Intereses (Adopción)",
+            "base": "/api/intereses",
+            "rutas": [
+                {
+                    "metodo": "POST",
+                    "ruta": "/api/intereses",
+                    "descripcion": "Registrar el interés de un usuario en adoptar una mascota",
+                    "rol_requerido": "Admin / Voluntario",
+                    "body": {
+                        "usuarioId": "integer (obligatorio) — ID del usuario interesado",
+                        "mascotaId": "integer (obligatorio) — ID de la mascota"
+                    },
+                    "respuesta_exitosa": {
+                        "status": 201,
+                        "body": "Objeto Interes creado"
+                    },
+                    "socket_evento": "nuevo_interes"
+                },
+                {
+                    "metodo": "GET",
+                    "ruta": "/api/intereses/mascota/:id",
+                    "descripcion": "Obtener la lista de usuarios interesados en una mascota específica",
+                    "rol_requerido": "Admin",
+                    "params": {
+                        "id": "integer — ID de la mascota"
+                    },
+                    "respuesta_exitosa": {
+                        "status": 200,
+                        "body": "Array de intereses con datos del usuario (id, nombre, email, telefono)"
+                    }
+                }
+            ]
+        },
+        {
+            "grupo": "Salud (Historial Clínico)",
+            "base": "/api/salud",
+            "rutas": [
+                {
+                    "metodo": "POST",
+                    "ruta": "/api/salud",
+                    "descripcion": "Agregar un registro médico al historial clínico de una mascota",
+                    "rol_requerido": "Solo Admin",
+                    "body": {
+                        "rol": "string (obligatorio) — debe ser 'admin'",
+                        "mascotaId": "integer (obligatorio) — ID de la mascota",
+                        "diagnostico": "string (obligatorio)",
+                        "vacuna": "string (opcional)",
+                        "fechaTratamiento": "string/date (obligatorio) — formato YYYY-MM-DD"
+                    },
+                    "respuesta_exitosa": {
+                        "status": 201,
+                        "body": "Objeto Salud creado"
+                    },
+                    "socket_evento": "nuevo_registro_salud"
+                },
+                {
+                    "metodo": "GET",
+                    "ruta": "/api/salud/mascota/:mascotaId",
+                    "descripcion": "Obtener el historial clínico completo de una mascota, ordenado de más reciente a más antiguo",
+                    "rol_requerido": "Todos",
+                    "params": {
+                        "mascotaId": "integer — ID de la mascota"
+                    },
+                    "respuesta_exitosa": {
+                        "status": 200,
+                        "body": "Array de registros de salud ordenados por fechaTratamiento DESC"
+                    }
+                }
+            ]
+        }
+    ],
+    "eventos_socket": [
+        {
+            "evento": "mascota_actualizada",
+            "descripcion": "Se emite al crear o actualizar una mascota",
+            "datos": "Objeto Mascota completo"
+        },
+        {
+            "evento": "mascota_eliminada",
+            "descripcion": "Se emite al eliminar una mascota",
+            "datos": "{ id: integer }"
+        },
+        {
+            "evento": "hogar_actualizado",
+            "descripcion": "Se emite al crear o actualizar un hogar",
+            "datos": "Objeto Hogar completo"
+        },
+        {
+            "evento": "hogar_eliminado",
+            "descripcion": "Se emite al eliminar un hogar",
+            "datos": "{ id: integer }"
+        },
+        {
+            "evento": "nuevo_interes",
+            "descripcion": "Se emite al registrar un interés de adopción",
+            "datos": "Objeto Interes creado"
+        },
+        {
+            "evento": "nuevo_registro_salud",
+            "descripcion": "Se emite al agregar un registro de salud",
+            "datos": "Objeto Salud creado"
+        }
+    ]
+}

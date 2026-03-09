@@ -5,9 +5,21 @@ const cors = require('cors');
 const { conectarDB, sequelize } = require('./config/db');
 const socketManager = require('./socket');
 
-require('./models/Usuario');
-require('./models/Mascota');
-require('./models/Hogar');
+const Usuario = require('./models/Usuario');
+const Mascota = require('./models/Mascota');
+const Hogar = require('./models/Hogar');
+const Interes = require('./models/Interes');
+const Salud = require('./models/Salud');
+
+// ─── Asociaciones Sequelize ───────────────────
+Interes.belongsTo(Usuario, { foreignKey: 'usuarioId' });
+Interes.belongsTo(Mascota, { foreignKey: 'mascotaId' });
+Usuario.hasMany(Interes, { foreignKey: 'usuarioId' });
+Mascota.hasMany(Interes, { foreignKey: 'mascotaId' });
+
+Salud.belongsTo(Mascota, { foreignKey: 'mascotaId' });
+Mascota.hasMany(Salud, { foreignKey: 'mascotaId' });
+// ─────────────────────────────────────────────
 
 const app = express();
 
@@ -17,6 +29,8 @@ app.use(cors());
 app.use('/api/usuarios', require('./routes/usuarioRoutes'));
 app.use('/api/mascotas', require('./routes/mascotaRoutes'));
 app.use('/api/hogares', require('./routes/hogarRoutes'));
+app.use('/api/intereses', require('./routes/interesRoutes'));
+app.use('/api/salud', require('./routes/saludRoutes'));
 
 // Crear servidor HTTP que comparte Express + Socket.io
 const server = http.createServer(app);

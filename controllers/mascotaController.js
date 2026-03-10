@@ -1,4 +1,6 @@
 const Mascota = require('../models/Mascota');
+const Salud = require('../models/Salud');
+const Interes = require('../models/Interes');
 const socketManager = require('../socket');
 
 // ─────────────────────────────────────────────
@@ -118,6 +120,10 @@ exports.eliminarMascota = async (req, res) => {
         if (!mascota) {
             return res.status(404).json({ msg: 'Mascota no encontrada' });
         }
+
+        // Eliminar registros dependientes primero (evita error de FK constraint)
+        await Salud.destroy({ where: { mascotaId: id } });
+        await Interes.destroy({ where: { mascotaId: id } });
 
         await mascota.destroy();
 

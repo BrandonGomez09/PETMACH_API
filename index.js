@@ -5,6 +5,9 @@ const cors = require('cors');
 const { conectarDB, sequelize } = require('./config/db');
 const socketManager = require('./socket');
 
+// Inicializar Firebase
+require('./config/firebase');
+
 const Usuario = require('./models/Usuario');
 const Mascota = require('./models/Mascota');
 const Hogar = require('./models/Hogar');

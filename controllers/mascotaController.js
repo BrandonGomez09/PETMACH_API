@@ -2,24 +2,45 @@ const Mascota = require('../models/Mascota');
 const Salud = require('../models/Salud');
 const Interes = require('../models/Interes');
 const socketManager = require('../socket');
+const admin = require('../config/firebase');
 
 // ─────────────────────────────────────────────
 // CREAR
 // ─────────────────────────────────────────────
 exports.crearMascota = async (req, res) => {
     try {
+        // 1. Guardamos la mascota en la Base de Datos
         const nuevaMascota = await Mascota.create(req.body);
 
-        // 🔔 Emitir evento en tiempo real
+        // 2. 🔔 Emitir evento en tiempo real para tu panel web
         socketManager.getIO().emit('mascota_actualizada', nuevaMascota);
 
+        // 3. 🚀 Enviar Notificación Push a través de Firebase
+        try {
+            const mensaje = {
+                notification: {
+                    title: '¡Nuevo peludito busca hogar! 🐾',
+                    body: `Conoce a ${nuevaMascota.nombre}, un ${nuevaMascota.especie.toLowerCase()} de ${nuevaMascota.edad} añitos que acaba de llegar.`
+                },
+                topic: 'adopciones' // Este es el "canal" al que se suscribirán los celulares
+            };
+            
+            // Le ordenamos a Firebase que mande el mensaje
+            await admin.messaging().send(mensaje);
+            console.log(`✅ Notificación Push enviada a Firebase por: ${nuevaMascota.nombre}`);
+        } catch (firebaseError) {
+            console.error('❌ Error enviando Notificación Push a Firebase:', firebaseError);
+            // Nota: Si Firebase falla, NO rompemos la app. La mascota ya se guardó en la BD.
+        }
+
+        // 4. Respondemos a la página web que todo salió bien
         res.status(201).json(nuevaMascota);
+
     } catch (error) {
         console.error(error);
         res.status(500).send('Hubo un error al crear la mascota');
     }
 };
-
 // ─────────────────────────────────────────────
 // OBTENER TODAS
 // ─────────────────────────────────────────────

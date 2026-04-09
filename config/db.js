@@ -1,27 +1,21 @@
-// config/db.js
 const { Sequelize } = require('sequelize');
 require('dotenv').config();
 
-// Configuración de la conexión
-// OJO: En local suele ser usuario 'postgres' y la contraseña que pusiste al instalar
 const sequelize = new Sequelize(
-    process.env.DB_NAME || 'petmatch', 
-    process.env.DB_USER || 'postgres', 
-    process.env.DB_PASS || 'admin', // CAMBIA ESTO por tu contraseña de instalación
+    process.env.DB_NAME,
+    process.env.DB_USER,
+    process.env.DB_PASS,
     {
-        host: process.env.DB_HOST || 'localhost',
+        host: process.env.DB_HOST,
         dialect: 'postgres',
-        logging: false, // Para que no llene la consola de texto SQL
+        logging: false, // Oculta los logs de SQL en la consola para que sea más limpia
+        dialectOptions: {
+            ssl: {
+                require: true,
+                rejectUnauthorized: false // Obligatorio para que Render acepte la conexión
+            }
+        }
     }
 );
 
-const conectarDB = async () => {
-    try {
-        await sequelize.authenticate();
-        console.log('✅ Conectado exitosamente a PostgreSQL');
-    } catch (error) {
-        console.error('❌ Error conectando a PostgreSQL:', error);
-    }
-};
-
-module.exports = { sequelize, conectarDB };
+module.exports = sequelize;

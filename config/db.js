@@ -8,14 +8,24 @@ const sequelize = new Sequelize(
     {
         host: process.env.DB_HOST,
         dialect: 'postgres',
-        logging: false, // Oculta los logs de SQL en la consola para que sea más limpia
+        logging: false, // Oculta los logs de SQL en la consola
         dialectOptions: {
             ssl: {
                 require: true,
-                rejectUnauthorized: false // Obligatorio para que Render acepte la conexión
+                rejectUnauthorized: false // Obligatorio para Render
             }
         }
     }
 );
 
-module.exports = sequelize;
+const conectarDB = async () => {
+    try {
+        await sequelize.authenticate();
+        console.log('✅ Conectado exitosamente a PostgreSQL');
+    } catch (error) {
+        console.error('❌ Error conectando a PostgreSQL:', error);
+    }
+};
+
+// ¡Esta es la línea clave que había omitido!
+module.exports = { sequelize, conectarDB };
